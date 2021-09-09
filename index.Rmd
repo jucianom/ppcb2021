@@ -1,0 +1,179 @@
+---
+title: "Pesquisa Perfil do Ciclisa 2021 - Painel para o acompanhamento local"
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: columns
+    vertical_layout: fill
+    
+runtime: shiny
+---
+
+
+<style>                     
+.navbar {
+  background-color:#000080;
+  border-color:white;
+}
+.navbar-brand {
+color:white!important;
+}
+
+
+</style> 
+
+```{r setup, include=FALSE}
+library(flexdashboard)
+library(tidyverse)
+library(googlesheets4)
+
+source("script_ppcb2021.R", encoding = "UTF-8")
+
+ppcb21_painel <- ppcb21_painel |> 
+  mutate(sexo = as.character(sexo)) |> 
+  select(cidade, sexo)
+
+glimpse(ppcb21_painel)
+
+write_csv(ppcb21_painel, "C:/Users/jucia/Google Drive/Perfil_do_Ciclista2021/ppcb2021/ppcb21_painel.csv")
+
+ppcb21 <- read.csv("ppcb21_painel.csv")
+
+
+```
+
+## Column { .sidebar}
+
+
+```{r}
+selectInput(
+  inputId = "cidade",
+  label = "Escolha a Cidade",
+  choices = c("Alagoinhas",
+"Alegrete",
+"Aracaju",
+"Araucária",
+"Belém",
+"Belo Horizonte",
+"Blumenau",
+"Borda da Mata",
+"Botucatu",
+"Brasília",
+"Cachoeirinha",
+"Campinas",
+"Campo Grande",
+"Campo Mourão",
+"Campos dos Goytacazes",
+"Cascavel",
+"Colombo",
+"Curitiba",
+"Florianópolis",
+"Fortaleza",
+"Foz do Iguaçu",
+"Francisco Beltrão",
+"Guarapuava",
+"Ilha Bela",
+"Jaguariúna",
+"João Pessoa",
+"Lauro de Freitas",
+"Londrina",
+"Lucas do Rio Verde",
+"Maceió",
+"Manaus",
+"Maringá",
+"Mogi das Cruzes",
+"Natal",
+"Niterói",
+"Paranaguá",
+"Paranavaí",
+"Petrolina",
+"Petrópolis",
+"Ponta Grossa",
+"Porto Alegre",
+"Queimados",
+"Recife",
+"Ribeirão Preto",
+"Rio de Janeiro",
+"Salvador",
+"Santo André",
+"São José dos Campos",
+"São José dos Pinhais",
+"São Luís",
+"São Paulo",
+"Socorro",
+"Teresina",
+"Toledo",
+"Torres",
+"Uberlândia")
+)
+
+```
+
+- Cidades que ainda não iniciaram a digitalização dos questionários aparecerão sem valores nas colunas ao lado
+
+
+Column {data-width=650}
+-----------------------------------------------------------------------
+
+### Questionários aplicados
+
+```{r}
+
+renderValueBox({
+  x <- ppcb21 |>
+  filter(cidade == input$cidade) |>  
+  group_by(cidade) |>
+    count() 
+
+valueBox(x$n, icon = "fa-bicycle", color = "#006400")})
+
+
+```
+
+### Pessoas do entrevistadas do gênero feminino
+
+```{r}
+
+renderValueBox({
+  x <- ppcb21 |>
+  filter(cidade == input$cidade) |>  
+  group_by(cidade) |>
+  janitor::tabyl(sexo) |>
+  mutate(percentual = round((percent/sum(percent))*100), 1) |> 
+  filter(sexo == "2. Feminino") 
+
+valueBox(x$n, icon = "fa-bicycle", color = "#EE7621")})
+
+
+```
+
+
+### % de pessoas entrevistadas são do gênero feminino
+
+```{r}
+
+renderValueBox({
+  x <- ppcb21 |>
+  filter(cidade == input$cidade) |>  
+  group_by(cidade) |>
+  janitor::tabyl(sexo) |>
+  mutate(percentual = round((percent/sum(percent))*100), 1) |> 
+  filter(sexo == "2. Feminino") 
+
+valueBox(x$percentual, icon = "fa-bicycle", color = "#EE7621")})
+
+
+```
+
+## Column {data-width=350}
+
+
+
+### Questionários aplicados até:
+
+```{r}
+
+format(Sys.time(), '%d %B, %Y')
+
+```
+
+
